@@ -62,16 +62,20 @@ app.on('activate', () => {
 const fs = require('fs');
 const request = require('request');
 require('chokidar').watch('./src/outbox', {ignored: /[\/\\]\./}).on('all', function(event, path) {
-  console.log(event, path);
+  console.log('event path', event, path);
 
-  let req = request.post('https://fhirtest.uhn.ca/baseDstu3/Binary', function (err, resp, body) {
-    if (err) {
-      console.log('Error!');
-    } else {
-      console.log('URL: ' + body);
+if(event === 'add') {
+  let stream = fs.createReadStream(path)
+    let options = {
+      filename: 'test.txt'
     }
-  });
-  let form = req.form();
-  form.append('myfile', fs.createReadStream(path), {
-  });
-  })
+    stream.pipe( request.post('https://fhirtest.uhn.ca/baseDstu3/Binary'), options,  function(error, res, body) {
+      console.log('error: ', error);
+      console.log('res: ', res);
+      console.log('body: ', body);
+    }
+  )
+}
+
+
+})
